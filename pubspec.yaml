@@ -47,8 +47,11 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  assets: 
-    - assets/
+  assets:
+    - assets/vectors/
+    - assets/images/
+    - assets/lottie/
+    - assets/icons/
 
   fonts:
     - family: Aeonik
