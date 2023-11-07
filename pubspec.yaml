@@ -34,6 +34,7 @@ dependencies:
   youtube_metadata: ^1.0.1
   video_thumbnail: ^0.5.3
   chewie: ^1.7.1
+  class_to_string: ^1.0.0
 
 dev_dependencies:
   flutter_test:
