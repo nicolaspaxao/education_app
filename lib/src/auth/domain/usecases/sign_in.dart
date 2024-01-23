@@ -1,10 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'package:equatable/equatable.dart';
-
 import 'package:education_app/core/usecases/usecases.dart';
 import 'package:education_app/core/utils/typedefs.dart';
 import 'package:education_app/src/auth/domain/entities/user.dart';
 import 'package:education_app/src/auth/domain/repos/auth_repo.dart';
+import 'package:equatable/equatable.dart';
 
 class SignIn extends UsecaseWithParams<LocalUser, SignInParams> {
   SignIn(this._repo);

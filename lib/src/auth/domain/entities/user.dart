@@ -1,19 +1,19 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
 class LocalUser extends Equatable {
   const LocalUser({
     required this.uid,
     required this.email,
-    required this.bio,
     required this.points,
     required this.fullName,
-    required this.groupIds,
-    required this.enrolledCourseIds,
-    required this.following,
-    required this.followers,
+    this.bio,
+    this.groupIds = const [],
+    this.enrolledCourseIds = const [],
+    this.following = const [],
+    this.followers = const [],
     this.profilePic,
   });
+
   const LocalUser.empty()
       : this(
           uid: '',
@@ -31,7 +31,7 @@ class LocalUser extends Equatable {
   final String uid;
   final String email;
   final String? profilePic;
-  final String bio;
+  final String? bio;
   final int points;
   final String fullName;
   final List<String> groupIds;
@@ -60,5 +60,31 @@ class LocalUser extends Equatable {
         'enrolledCourseIds: $enrolledCourseIds, '
         'following: $following, '
         'followers: $followers }';
+  }
+
+  LocalUser copyWith({
+    String? uid,
+    String? email,
+    String? profilePic,
+    String? bio,
+    int? points,
+    String? fullName,
+    List<String>? groupIds,
+    List<String>? enrolledCourseIds,
+    List<String>? following,
+    List<String>? followers,
+  }) {
+    return LocalUser(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      profilePic: profilePic ?? this.profilePic,
+      bio: bio ?? this.bio,
+      points: points ?? this.points,
+      fullName: fullName ?? this.fullName,
+      groupIds: groupIds ?? this.groupIds,
+      enrolledCourseIds: enrolledCourseIds ?? this.enrolledCourseIds,
+      following: following ?? this.following,
+      followers: followers ?? this.followers,
+    );
   }
 }
