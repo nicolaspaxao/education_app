@@ -50,4 +50,5 @@ class LocalUserModel extends LocalUser {
         'following': following,
         'followers': followers,
       };
+
 }

@@ -26,7 +26,6 @@ void main() {
 
   const tEmail = 'Test email';
   const tPassword = 'Test password';
-  const tFullName = 'Test full name';
   const tLocalUserModel = LocalUserModel.empty();
 
   group('forgotPassword', () {
