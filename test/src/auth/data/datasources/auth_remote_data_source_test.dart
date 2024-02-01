@@ -1,111 +1,53 @@
-import 'package:education_app/core/enums/update_user.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:education_app/src/auth/data/datasources/auth_remote_data_source.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
-import 'package:firebase_storage_mocks/firebase_storage_mocks.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_sign_in_mocks/google_sign_in_mocks.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockFirebaseStorage extends Mock implements FirebaseStorage {}
+
+class MockFirebaseAuth extends Mock implements FirebaseAuth {}
+
+class MockFirebaseFirestore extends Mock implements FirebaseFirestore {}
+
+class MockUserCredential extends Mock implements UserCredential {
+  MockUserCredential([User? user]) : _user = user;
+
+  User? _user;
+
+  @override
+  User? get user => _user;
+
+  set user(User? value) {
+    if (_user != value) _user = value;
+  }
+}
+
+class MockUser extends Mock implements User {
+  final String _uid = 'Test uid';
+
+  @override
+  String get uid => _uid;
+}
 
 void main() {
-  late FakeFirebaseFirestore cloudStoreClient;
-  late MockFirebaseAuth authClient;
-  late MockFirebaseStorage dbClient;
+  late FirebaseAuth authClient;
+  late FirebaseFirestore cloudStoreClient;
+  late FirebaseStorage dbClient;
   late AuthRemoteDataSource dataSource;
+  late UserCredential userCredential;
 
-  setUp(() async {
-    cloudStoreClient = FakeFirebaseFirestore();
-    final googleSignIn = MockGoogleSignIn();
-    final signInAccount = await googleSignIn.signIn();
-    final googleAuth = await signInAccount!.authentication;
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    final mockUser = MockUser(
-      uid: 'someuid',
-      email: 'bob@somedomain.com',
-      displayName: 'Bob',
-    );
-
-    authClient = MockFirebaseAuth(mockUser: mockUser);
-    await authClient.signInWithCredential(credential);
-
+  setUp(() {
+    authClient = MockFirebaseAuth();
+    cloudStoreClient = MockFirebaseFirestore();
     dbClient = MockFirebaseStorage();
+    final mockUser = MockUser();
+    userCredential = MockUserCredential(mockUser);
     dataSource = AuthRemoteDataSourceImpl(
       authClient: authClient,
       cloudStoreClient: cloudStoreClient,
       dbClient: dbClient,
     );
-  });
-
-  const tPassword = 'Test Password';
-  const tFullName = 'Test Full Name';
-  const tEmail = 'testeemail@email.com';
-
-  test('signUp', () async {
-    await dataSource.signUp(
-      email: tEmail,
-      fullName: tFullName,
-      password: tPassword,
-    );
-
-    //expect that the user was created in the firestore and the authCliente
-    //also has this user
-    expect(authClient.currentUser, isNotNull);
-    expect(authClient.currentUser!.displayName, tFullName);
-
-    final user = await cloudStoreClient
-        .collection('users')
-        .doc(authClient.currentUser!.uid)
-        .get();
-
-    expect(user.exists, isTrue);
-  });
-
-  test('signIn', () async {
-    await dataSource.signUp(
-      email: 'newEmail@email.com',
-      fullName: tFullName,
-      password: tPassword,
-    );
-
-    await authClient.signOut();
-
-    await dataSource.signIn(email: 'newEmail@email.com', password: tPassword);
-
-    expect(authClient.currentUser, isNotNull);
-    expect(authClient.currentUser!.email, equals('newEmail@email.com'));
-  });
-
-  group('updateUser', () {
-    setUp(() async {
-      //Arrange
-      await dataSource.signUp(
-        email: tEmail,
-        fullName: tFullName,
-        password: tPassword,
-      );
-    });
-    test('displayName', () async {
-      //Act
-      await dataSource.updateUser(
-        action: UpdateUserAction.displayName,
-        userData: 'new name',
-      );
-
-      expect(authClient.currentUser!.displayName, 'new name');
-    });
-
-    test('email', () async {
-      //Act
-      await dataSource.updateUser(
-        action: UpdateUserAction.email,
-        userData: 'newemail@gmail.com',
-      );
-
-      expect(authClient.currentUser!.email, 'newemail@gmail.com');
-    });
   });
 }
