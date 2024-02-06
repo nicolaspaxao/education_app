@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:education_app/core/errors/exceptions.dart';
+import 'package:education_app/core/utils/constants.dart';
 import 'package:education_app/core/utils/typedefs.dart';
 import 'package:education_app/src/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:education_app/src/auth/data/models/user_model.dart';
@@ -191,6 +192,88 @@ void main() {
           ),
         ).called(1);
 
+        verifyNoMoreInteractions(authClient);
+      },
+    );
+  });
+
+  group('signUp', () {
+    test(
+      'should throw [ServerException] when [FirebaseAuthException] is thrown',
+      () async {
+        when(
+          () => authClient.createUserWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenThrow(tFirebaseAuthException);
+
+        final call = dataSource.signUp;
+
+        expect(
+          () => call(
+            email: tEmail,
+            fullName: tFullName,
+            password: tPassword,
+          ),
+          throwsA(isA<ServerException>()),
+        );
+
+        verify(
+          () => authClient.createUserWithEmailAndPassword(
+            email: tEmail,
+            password: tPassword,
+          ),
+        ).called(1);
+
+        verifyNoMoreInteractions(authClient);
+      },
+    );
+
+    test(
+      'should complete register a use on Firebase',
+      () async {
+        when(
+          () => authClient.createUserWithEmailAndPassword(
+            email: any(named: 'email'),
+            password: any(named: 'password'),
+          ),
+        ).thenAnswer((_) async => userCredential);
+
+        when(() => userCredential.user?.updateDisplayName(any())).thenAnswer(
+          (_) async => Future.value(),
+        );
+        when(() => userCredential.user?.updatePhotoURL(any())).thenAnswer(
+          (_) async => Future.value(),
+        );
+
+        final call = dataSource.signUp(
+          email: tEmail,
+          fullName: tFullName,
+          password: tPassword,
+        );
+
+        expect(
+          call,
+          completes,
+        );
+
+        verify(
+          () => authClient.createUserWithEmailAndPassword(
+            email: tEmail,
+            password: tPassword,
+          ),
+        ).called(1);
+
+        await untilCalled(() => userCredential.user?.updateDisplayName(any()));
+        await untilCalled(
+          () => userCredential.user?.updatePhotoURL(kDefaultAvatar),
+        );
+
+        verify(() => userCredential.user?.updateDisplayName(tFullName))
+            .called(1);
+        verify(() => userCredential.user?.updatePhotoURL(kDefaultAvatar))
+            .called(1);
         verifyNoMoreInteractions(authClient);
       },
     );
